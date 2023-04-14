@@ -37,12 +37,13 @@ void * calcular_ocurrencias(void * ptr){
             pthread_mutex_unlock(&acceder_var);
         }
     }
+    pthread_exit(0);
 }
 
 
 int main(int argc, char *argv[]){
     double timeSecuencial,timeParalelo,tick;
-    int i,j,k,cant_threads,N,cant_ocurrencias_secuencial;
+    int i,j,k,cant_threads,N,cant_ocurrencias_secuencial=0;
     pthread_attr_t attr;
 
     if (argc != 4){
@@ -72,8 +73,7 @@ int main(int argc, char *argv[]){
 
     timeSecuencial = dwalltime() - tick;
     printf("Tiempo para calcular cantidad de ocurrencias secuencial: %f\n",timeSecuencial);
-    printf("Cantidad de ocurrencias en secuencial: %i",cant_ocurrencias_secuencial);
-
+    printf("Cantidad de ocurrencias en secuencial: %i \n",cant_ocurrencias_secuencial);
 
     //calculo paralelo
     int cant_elem = N/cant_threads;
@@ -82,8 +82,9 @@ int main(int argc, char *argv[]){
         posiciones[i].primera=aux;
         aux+=cant_elem;
         posiciones[i].ultima=aux-1;
+        printf("Thread: %i, primera:%i, ultima:%i \n",i,posiciones[i].primera,posiciones[i].ultima);
     }
-    tick = dwalltime();
+/*     tick = dwalltime();
 
     for(i=0;i<cant_threads;i++){
         pthread_create(&threads[i],&attr,calcular_ocurrencias,&posiciones[i]);
@@ -95,5 +96,7 @@ int main(int argc, char *argv[]){
     
     timeParalelo = dwalltime() - tick;
     printf("Tiempo requerido para calcular la multiplicacion paralela con %i threads: %f\n",cant_threads,timeParalelo);
-    printf("Cantidad de ocurrencias en paralelo: %i",cant_ocurrencias);
+    printf("Cantidad de ocurrencias en paralelo: %i\n",cant_ocurrencias); */
+    free(vec);
+    exit(0);
 }
