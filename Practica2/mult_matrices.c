@@ -45,6 +45,7 @@ int main(int argc, char *argv[]){
     //Verificar parametro 
     if (argc != 3){
         printf("El primer parametro debe ser el N, y el segundo la cantidad de hilos");
+        exit(1);
     }
     N = atoi(argv[1]);
     cant_threads = atoi(argv[2]);
@@ -79,13 +80,13 @@ int main(int argc, char *argv[]){
     }
     timeSecuencial = dwalltime() - tick;
     printf("Tiempo requerido para calcular la multiplicacion secuencial: %f\n",timeSecuencial);
-    printf("imprimo C (primeros 10 elementos) \n");
+/*     printf("imprimo C (primeros 10 elementos) \n");
     for(i=0;i<10;i++){
         for(j=0;j<10;j++){
             printf(" [%i][%i]= %0.0f ",i,j,C[i*N+j]);
         }
         printf("\n");
-    } 
+    }  */
 
     //calculo paralelo
     pthread_attr_init(&attr); //inicializacion
@@ -110,15 +111,16 @@ int main(int argc, char *argv[]){
     timeParalelo = dwalltime() - tick;
     printf("Tiempo requerido para calcular la multiplicacion paralela con %i threads: %f\n",cant_threads,timeParalelo);
 
-    printf("imprimo D (primeros 10 elementos) \n");
+/*     printf("imprimo D (primeros 10 elementos) \n");
     for(i=0;i<10;i++){
         for(j=0;j<10;j++){
             printf(" [%i][%i]= %0.0f ",i,j,D[i*N+j]);
         }
         printf("\n");
-    } 
+    }  */
 
     free(A);
     free(B);
     free(C);
+    free(D);
 }
