@@ -1,0 +1,16 @@
+### Executable ###
+*.app
+*.bat
+*.cgi
+*.com
+*.exe
+*.gadget
+*.jar
+*.pif
+*.vb
+*.wsf
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
