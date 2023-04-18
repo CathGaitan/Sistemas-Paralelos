@@ -52,6 +52,7 @@ int main(int argc, char *argv[]){
     int ids[cant_threads];
 
     vec=(int*)malloc(sizeof(int)*N);
+    pthread_attr_init(&attr); //inicializacion del atributo
 
     for(i=0;i<N;i++){
         if(i==2 || i==6 || i==8) vec[i]=99;
