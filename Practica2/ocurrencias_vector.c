@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <sys/time.h>
 
 //variables globales
 int cant_ocurrencias_paralelo=0,nro_encontrar,cant_threads,N;
