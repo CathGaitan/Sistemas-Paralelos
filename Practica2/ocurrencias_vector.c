@@ -3,12 +3,8 @@
 #include <pthread.h>
 
 //variables globales
-int cant_ocurrencias_paralelo=0,nro_encontrar;
+int cant_ocurrencias_paralelo=0,nro_encontrar,cant_threads,N;
 int* vec;
-struct pos{
-    int primera;
-    int ultima;
-};
 
 //mutex
 pthread_mutex_t acceder_var;
@@ -23,28 +19,25 @@ double dwalltime(){
 }
 
 void * calcular_ocurrencias(void * ptr){
-/*     int i;
-    struct pos *p;
-    p=(struct pos*) ptr;
-    struct pos posiciones = *p;
-    int primera = posiciones.primera;
-    int ultima = posiciones.ultima;
-
-     for(i=primera;i<ultima;i++){
+    int *p,id,i,ocurrencias=0;
+    p=(int*) ptr;
+    id=*p;
+    int primera=id*(N/cant_threads);
+    int ultima=primera+(N/cant_threads);
+    for(i=primera;i<ultima;i++){
         if(vec[i]==nro_encontrar){
-            pthread_mutex_lock(&acceder_var);
-            cant_ocurrencias_paralelo++;
-            pthread_mutex_unlock(&acceder_var);
+            ocurrencias++;
         }
-    } */
-    printf("buenos dias");
+    }
+    pthread_mutex_lock(&acceder_var);
+    cant_ocurrencias_paralelo+=ocurrencias;
+    pthread_mutex_unlock(&acceder_var);
     pthread_exit(0);
 }
 
-
 int main(int argc, char *argv[]){
     double timeSecuencial,timeParalelo,tick;
-    int i,j,k,cant_threads,N,cant_ocurrencias_secuencial=0;
+    int i,j,k,cant_ocurrencias_secuencial=0;
     pthread_attr_t attr;
 
     if (argc != 4){
@@ -54,8 +47,8 @@ int main(int argc, char *argv[]){
     N = atoi(argv[1]);
     cant_threads = atoi(argv[2]);
     nro_encontrar = atoi(argv[3]);
-    struct pos posiciones[cant_threads]; //para mandarle lo que debe recorrer
     pthread_t threads[cant_threads]; //declaracion de los threads
+    int ids[cant_threads];
 
     vec=(int*)malloc(sizeof(int)*N);
 
@@ -76,19 +69,12 @@ int main(int argc, char *argv[]){
     printf("Tiempo para calcular cantidad de ocurrencias secuencial: %f\n",timeSecuencial);
     printf("Cantidad de ocurrencias en secuencial: %i \n",cant_ocurrencias_secuencial);
 
-    //calculo cant de elementos, para cada thread
-    int cant_elem = N/cant_threads;
-    int aux=0;
-    for(i=0;i<cant_threads;i++){
-        posiciones[i].primera=aux;
-        aux+=cant_elem;
-        posiciones[i].ultima=aux-1;
-        printf("Thread: %i, primera:%i, ultima:%i \n",i,posiciones[i].primera,posiciones[i].ultima);
-    }
+    //Calculo paralelo
     tick = dwalltime();
 
     for(i=0;i<cant_threads;i++){
-        pthread_create(&threads[i],&attr,calcular_ocurrencias,&posiciones[i]);
+        ids[i]=i;
+        pthread_create(&threads[i],&attr,calcular_ocurrencias,&ids[i]);
     }
 
     for(i=0;i<cant_threads;i++){
