@@ -2,11 +2,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-struct pos{
-    int primera;
-    int ultima;
-};
-int N;
+int N,cant_threads;
 double *A,*B,*C,*D;
 
 //Para calcular tiempo
@@ -19,12 +15,11 @@ double dwalltime(){
 }
 
 void * mult_matrices(void * ptr){
-    int i,j,k;
-    struct pos *p;
-    p=(struct pos*) ptr;
-    struct pos posiciones = *p;
-    int primera = posiciones.primera;
-    int ultima = posiciones.ultima;
+    int *p,id,i,j,k;
+    p=(int*) ptr;
+    id=*p;
+    int primera=id*(N/cant_threads);
+    int ultima=primera+(N/cant_threads);
     for(i=primera; i<ultima; i++){
         for(j=0;j<N;j++){
             double valorD = 0; 
@@ -39,18 +34,17 @@ void * mult_matrices(void * ptr){
 
 int main(int argc, char *argv[]){
     double timeSecuencial,timeParalelo,tick;
-    int i,j,k,cant_threads;
+    int i,j,k;
     pthread_attr_t attr;
 
     //Verificar parametro 
     if (argc != 3){
-        printf("El primer parametro debe ser el N, y el segundo la cantidad de hilos");
+        printf("El primer parametro debe ser el N, y el segundo la cantidad de hilos\n");
         exit(1);
     }
     N = atoi(argv[1]);
-    cant_threads = atoi(argv[2]);
-    
-    struct pos posiciones[cant_threads]; //para mandarle lo que debe recorrer
+    cant_threads = atoi(argv[2]);  
+    int ids[cant_threads]; 
     pthread_t threads[cant_threads]; //declaracion de los threads
 
     //Aloca memoria para las matrices
@@ -59,7 +53,7 @@ int main(int argc, char *argv[]){
     C=(double*)malloc(sizeof(double)*N*N);
     D=(double*)malloc(sizeof(double)*N*N);
 
-    //Inicializa las matrices reservando posicion en memoria
+    //Inicializa las matrices
     for(i=0;i<N;i++){
         for(j=0;j<N;j++){
             A[i*N+j]=rand() % 2 + 1; //ordenado por fila
@@ -80,28 +74,22 @@ int main(int argc, char *argv[]){
     }
     timeSecuencial = dwalltime() - tick;
     printf("Tiempo requerido para calcular la multiplicacion secuencial: %f\n",timeSecuencial);
-/*     printf("imprimo C (primeros 10 elementos) \n");
+     printf("imprimo C (primeros 10 elementos) \n");
     for(i=0;i<10;i++){
         for(j=0;j<10;j++){
             printf(" [%i][%i]= %0.0f ",i,j,C[i*N+j]);
         }
         printf("\n");
-    }  */
+    }  
 
     //calculo paralelo
-    pthread_attr_init(&attr); //inicializacion
-    int cant_elem = N/cant_threads;
-    int aux=0;
-    for(i=0;i<cant_threads;i++){
-        posiciones[i].primera=aux;
-        aux+=cant_elem;
-        posiciones[i].ultima=aux-1;
-    }
+    pthread_attr_init(&attr); //inicializacion del atributo
 
     tick = dwalltime();
 
     for(i=0;i<cant_threads;i++){
-        pthread_create(&threads[i],&attr,mult_matrices,&posiciones[i]);
+        ids[i]=i;
+        pthread_create(&threads[i],&attr,mult_matrices,&ids[i]);
     }
 
     for(i=0;i<cant_threads;i++){
@@ -111,13 +99,13 @@ int main(int argc, char *argv[]){
     timeParalelo = dwalltime() - tick;
     printf("Tiempo requerido para calcular la multiplicacion paralela con %i threads: %f\n",cant_threads,timeParalelo);
 
-/*     printf("imprimo D (primeros 10 elementos) \n");
+     printf("imprimo D (primeros 10 elementos) \n");
     for(i=0;i<10;i++){
         for(j=0;j<10;j++){
             printf(" [%i][%i]= %0.0f ",i,j,D[i*N+j]);
         }
         printf("\n");
-    }  */
+    }  
 
     free(A);
     free(B);
