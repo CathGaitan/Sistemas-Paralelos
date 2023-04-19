@@ -20,8 +20,8 @@ void * mult_matrices(void * ptr){
     p=(int*) ptr;
     id=*p;
     int primera=id*(N/cant_threads);
-    int ultima=primera+(N/cant_threads);
-    for(i=primera; i<ultima; i++){
+    int ultima=primera+(N/cant_threads)-1;
+    for(i=primera; i<=ultima; i++){
         for(j=0;j<N;j++){
             double valorD = 0; 
             for(k=0;k<N;k++){

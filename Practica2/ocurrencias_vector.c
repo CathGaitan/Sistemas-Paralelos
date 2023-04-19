@@ -24,8 +24,9 @@ void * calcular_ocurrencias(void * ptr){
     p=(int*) ptr;
     id=*p;
     int primera=id*(N/cant_threads);
-    int ultima=primera+(N/cant_threads);
-    for(i=primera;i<ultima;i++){
+    int ultima=primera+(N/cant_threads)-1;
+    printf("Thread %i, primera:%i, ultima:%i\n",id,primera,ultima);
+    for(i=primera;i<=ultima;i++){
         if(vec[i]==nro_encontrar){
             ocurrencias++;
         }
@@ -55,7 +56,7 @@ int main(int argc, char *argv[]){
     pthread_attr_init(&attr); //inicializacion del atributo
 
     for(i=0;i<N;i++){
-        if(i==2 || i==6 || i==8) vec[i]=99;
+        if(i==4 || i==6 || i==8) vec[i]=99;
         else vec[i]=i;
     }
 

@@ -6,6 +6,8 @@
 
 int* vec;
 int maxP,minP,sumP,cant_threads,N;
+
+//semaforos
 sem_t sem_max,sem_min,sem_sum;
 
 
@@ -19,18 +21,20 @@ double dwalltime(){
 }
 
 void * buscar_max_min_prom(void* ptr){
-/*     int* p,id,i,sum;
-    p=(int*)ptr;
+    int *p,id,i,sum;
+    p=(int*) ptr;
     id=*p;
     int primera=id*(N/cant_threads);
-    int ultima=primera+(N/cant_threads);
+    int ultima=primera+(N/cant_threads)-1;
     int max=vec[primera],min=vec[primera];
-    //guardar en local y al final verifica
-    for(i=primera;i<ultima;i++){
+    //guardar en var local y al final actualiza
+    //printf("Thread %i, primera:%i, ultima:%i\n",id,primera,ultima);
+    for(i=primera;i<=ultima;i++){
         if(vec[i]>max) max=vec[i];
         else if(vec[i]<min) min=vec[i];
         sum+=vec[i];
     }
+    //printf("Thread:%i, max:%i,min:%i\n",id,max,min);
     sem_wait(&sem_max);
     if(maxP<max) maxP=max;
     sem_post(&sem_max);
@@ -41,15 +45,15 @@ void * buscar_max_min_prom(void* ptr){
 
     sem_wait(&sem_sum);
     sumP+=sum;
-    sem_post(&sem_sum); */
+    sem_post(&sem_sum);
+
     pthread_exit(0);
 }
 
 int main(int argc,char *argv[]){
     double timeSecuencial,timeParalelo,tick;
-    int i,N,ids[cant_threads];
+    int i;
     pthread_attr_t attr;
-    pthread_t threads[cant_threads];
 
     //Verificar parametro 
     if (argc != 3){
@@ -58,14 +62,18 @@ int main(int argc,char *argv[]){
     }
     N = atoi(argv[1]);
     cant_threads=atoi(argv[2]);
+
+    pthread_t threads[cant_threads];
+    int ids[cant_threads];
     vec=(int*)malloc(sizeof(int)*N);
-  
+    pthread_attr_init(&attr); //inicializacion del atributo
+
     for(i=0;i<N;i++){
-        vec[i]=rand()%100;
+        vec[i]=rand()%100+1;
     }
 
 //-----------------------------------------------------------------------------
-    //tiempo secuencial
+    //Calculo secuencial
     int maxS=vec[0],minS=vec[0],sumS=0;
     double promS;
 
@@ -81,13 +89,12 @@ int main(int argc,char *argv[]){
     printf("Tiempo requerido secuencial: %f\n",timeSecuencial);
 
 //-----------------------------------------------------------------------------
-    pthread_attr_init(&attr); //inicializacion atribuot
-    
     //inicializacion semaforos
     sem_init(&sem_max,1,1); 
     sem_init(&sem_min,1,1);
     sem_init(&sem_sum,1,1);
 
+    //Calculo paralelo
     tick = dwalltime();
     maxP=vec[0];minP=vec[0];sumP=0;
     for(i=0;i<cant_threads;i++){
@@ -101,7 +108,8 @@ int main(int argc,char *argv[]){
     double promP=sumP/N;
 
     timeParalelo = dwalltime() - tick;
-    printf("Paralelo: Max:%i, Min:%i, Prom:%f",maxP,minP,promP);
+    printf("Paralelo: Max:%i, Min:%i, Prom:%f\n",maxP,minP,promP);
     printf("Tiempo requerido paralelo con %i threads: %f\n",cant_threads,timeParalelo);
+    free(vec);
 
 }
