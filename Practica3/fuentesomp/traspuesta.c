@@ -39,7 +39,8 @@ int main(int argc,char*argv[]){
     }
   }   
 
-  #pragma omp parallel default(none) private(i,j,temp,timetick,tid) shared(A,N){ 
+  #pragma omp parallel default(none) private(i,j,temp,timetick,tid) shared(A,N)
+  { 
     tid= omp_get_thread_num();
     timetick = dwalltime();
     #pragma omp for private(i,j,temp) nowait
