@@ -9,7 +9,7 @@ double dwalltime();
 int main(int argc,char*argv[]){
  double *A,*B,*C,*A2,*B2,*C2;
  int i,j,k,N;
- int check=1;
+ int check=1,check2=1;
  double timetick;
 
  //Controla los argumentos al programa
@@ -40,9 +40,9 @@ int main(int argc,char*argv[]){
       }
    }   
 
-  timetick = dwalltime();
+   timetick = dwalltime();
    //Paralelizando filas
-   #pragma omp parallel for default(none) shared(A,B,C) private(i,j,k)
+   #pragma omp parallel for default(none) shared(A,B,C,N) private(i,j,k)
    for(i=0;i<N;i++){
       for(j=0;j<N;j++){
          C[i*N+j]=0;
@@ -56,8 +56,9 @@ int main(int argc,char*argv[]){
    timetick = dwalltime();
    //Paralelizando columnas
    for(i=0;i<N;i++){
+      #pragma omp parallel for default(none) shared(A2,B2,C2,N) private(j,k) firstprivate(i)
       for(j=0;j<N;j++){
-         C[i*N+j]=0;
+         C2[i*N+j]=0;
          for(k=0;k<N;k++){
             C2[i*N+j]= C2[i*N+j] + A2[i*N+k]*B2[k+j*N];
          }
@@ -65,23 +66,28 @@ int main(int argc,char*argv[]){
    }   
   printf("Tiempo paralelizando columnas %f \n", dwalltime() - timetick);
 
- //Verifica el resultado
-  for(i=0;i<N;i++){
-   for(j=0;j<N;j++){
-	check=check&&(C[i*N+j]==N);
+   //Verifica el resultado
+   for(i=0;i<N;i++){
+      for(j=0;j<N;j++){
+	      check=check&&(C[i*N+j]==N);
+      }
    }
-  }   
-
-  if(check){
-   printf("Multiplicacion de matrices resultado correcto\n");
-  }else{
-   printf("Multiplicacion de matrices resultado erroneo\n");
+   for(i=0;i<N;i++){
+      for(j=0;j<N;j++){
+	      check2=check2&&(C2[i*N+j]==N);
+      }
   }
 
- free(A);
- free(B);
- free(C);
- return(0);
+   if(check & check2){
+      printf("Multiplicacion de matrices resultado correcto\n");
+   }else{
+      printf("Multiplicacion de matrices resultado erroneo\n");
+  }
+
+   free(A);
+   free(B);
+   free(C);
+   return(0);
 }
 
 

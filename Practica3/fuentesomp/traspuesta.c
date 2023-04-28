@@ -8,79 +8,70 @@ double dwalltime();
 
 
 int main(int argc,char*argv[]){
- double *A;
- double temp; 
- int i,j, N,tid;
- int check=1;
- double timetick;
+  double *A;
+  double temp; 
+  int i,j, N,tid;
+  int check=1;
+  double timetick;
 
- //Controla los argumentos al programa
+  //Controla los argumentos al programa
   if (argc < 3){
-   printf("\n Faltan argumentos:: N dimension de la matriz, T cantidad de threads \n");
-   return 0;
+    printf("\n Faltan argumentos:: N dimension de la matriz, T cantidad de threads \n");
+    return 0;
   }
-   N=atoi(argv[1]);
-   int numThreads = atoi(argv[2]);
-   omp_set_num_threads(numThreads);	
 
- //Aloca memoria para las matrices
+  N=atoi(argv[1]);
+  int numThreads = atoi(argv[2]);
+  omp_set_num_threads(numThreads);	
+
+  //Aloca memoria para la matriz
   A=(double*)malloc(sizeof(double)*N*N);
 
   //Inicializa la matriz con unos en el triangulo inferior y ceros en el triangulo superior.
   for(i=0;i<N;i++){
-   for(j=0;j<N;j++){
-		if (i>=j)
-		{
-			A[i*N+j]= 1.0;
-		}
-		else
-		{
-			A[i*N+j]= 0.0;
-		}
-
-   }
+    for(j=0;j<N;j++){
+      if (i>=j){
+		    A[i*N+j]= 1.0;
+		  }
+		  else{
+        A[i*N+j]= 0.0;
+		  }
+    }
   }   
 
-#pragma omp parallel default(none) private(i,j,temp,timetick,tid) shared(A,N)
-{ 
- tid= omp_get_thread_num();
- timetick = dwalltime();
- #pragma omp for private(i,j,temp) nowait
-  for(i=0;i<N;i++){
-   for(j=i+1;j<N;j++){
-		temp = A[i*N+j];
-		A[i*N+j]= A[j*N+i];
-		A[j*N+i]= temp;
-   
-   }
-  }   
-    printf("Tiempo en segundos para el thread %d: %f \n", tid,dwalltime() - timetick);
-}
+  #pragma omp parallel default(none) private(i,j,temp,timetick,tid) shared(A,N){ 
+    tid= omp_get_thread_num();
+    timetick = dwalltime();
+    #pragma omp for private(i,j,temp) nowait
+    for(i=0;i<N;i++){ 
+      for(j=i+1;j<N;j++){ //cada iteracion de j depende de i
+        temp = A[i*N+j];
+        A[i*N+j]= A[j*N+i];
+        A[j*N+i]= temp;
+      }
+    }
+  }
 
-   
-
+  printf("Tiempo en segundos para el thread %d: %f \n", tid,dwalltime() - timetick);
   //Chequea los resultados
   for(i=0;i<N;i++){
-   for(j=0;j<N;j++){
-		if (i>j)
-		{
-			check= check&&(A[i*N+j]==0.0);
-		}
-		else
-		{
-			check= check&&(A[i*N+j]== 1.0);
-		}
-
-   }
+    for(j=0;j<N;j++){
+		  if (i>j){
+			  check= check&&(A[i*N+j]==0.0);
+		  }
+		  else{
+			  check= check&&(A[i*N+j]== 1.0);
+		  }
+    }
   }   
 
   if(check){
-   printf("Resultado correcto\n");
+    printf("Resultado correcto\n");
   }else{
-   printf("Resultado erroneo\n");
+    printf("Resultado erroneo\n");
   }
- free(A);
- return(0);
+  free(A);
+  return(0);
 }
 
 
