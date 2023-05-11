@@ -1,18 +1,4 @@
-### Executable ###
-*.app
-*.bat
-*.cgi
-*.com
-*.exe
-*.gadget
-*.jar
-*.pif
-*.vb
-*.wsf
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-*.vscode
-
+/Practica2/binarios/*
+/Practica3/binarios/*
+/Practica4/binarios/*
+.vscode
