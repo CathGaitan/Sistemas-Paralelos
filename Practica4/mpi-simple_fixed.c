@@ -1,60 +1,66 @@
-/*
-** Sending simple, point-to-point messages.
-*/
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include "mpi.h" 
 
 #define MASTER 0
 
+double dwalltime();
+
 int main(int argc, char* argv[]){
-  int myrank;
-  int size;
-  int dest;              /* destination rank for message */
-  int source;            /* source rank of a message */
-  int tag = 0;           /* scope for adding extra information to a message */
-  MPI_Status status;     /* struct used by MPI_Recv */
-  char message[BUFSIZ];
+    double tick;
+    int myrank;
+    int size;
+    int dest;              /* destination rank for message */
+    int source;            /* source rank of a message */
+    int tag = 0;           /* scope for adding extra information to a message */
+    MPI_Status status;     /* struct used by MPI_Recv */
+    char message[BUFSIZ];
 
-  /* MPI_Init returns once it has started up processes */
-  MPI_Init( &argc, &argv );
+    MPI_Init(&argc, &argv );
 
-  /* size and rank will become ubiquitous */ 
-  MPI_Comm_size( MPI_COMM_WORLD, &size );
-  MPI_Comm_rank( MPI_COMM_WORLD, &myrank );
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank); 
 
-  /* 
-  ** SPMD - conditionals based upon rank
-  ** will also become ubiquitous
-  */
-  if (myrank != MASTER) {  /* this is _NOT_ the master process */
-    /* create a message to send, in this case a character array */
-    sprintf(message, "Hola Mundo! Soy el proceso %d!", myrank);
-    /* send to the master process */
-    dest = MASTER;
-    /* 
-    ** Send our first message!
-    ** use strlen()+1, so that we include the string terminator, '\0'
-    */
-    MPI_Send(message,strlen(message)+1, MPI_CHAR, dest, tag, MPI_COMM_WORLD);
+    tick = dwalltime();
 
-  }
-  else {             /* i.e. this is the master process */
-    printf("Mensajes recibido por el proceso %d (master):\n", myrank);
-    /* loop over all the over processes */
-    for (source=1; source<size; source++) {
-      /* recieving their messages.. */
-      MPI_Recv(message, BUFSIZ, MPI_CHAR, source, tag, MPI_COMM_WORLD, &status);
-      /* and then printing them */
-      printf("Mensaje recibido: %s\n", message);
+    if(myrank == 0){
+        sprintf(message, "Hola Mundo! Soy el proceso %d!", myrank);
+        MPI_Send(message,strlen(message)+1,MPI_CHAR,myrank+1,tag,MPI_COMM_WORLD);
+        MPI_Recv(message, BUFSIZ, MPI_CHAR,size,tag, MPI_COMM_WORLD, &status);
+        printf("Mensaje recibido: %s\n", message);
     }
-  }
 
-  /* don't forget to tidy up when we're done */
-  MPI_Finalize();
+    if(myrank == size){
+        sprintf(message, "Hola Mundo! Soy el proceso %d!", myrank);
+        MPI_Recv(message, BUFSIZ, MPI_CHAR,myrank-1, tag, MPI_COMM_WORLD, &status);
+        MPI_Send(message,strlen(message)+1,MPI_CHAR,0,tag,MPI_COMM_WORLD);
+        printf("Mensaje recibido: %s\n", message);  
+    }
 
-  /* and exit the program */
-  return EXIT_SUCCESS;
+    if(myrank%2 == 0 && myrank !=size && myrank != 0){ //si mi rank es par
+        sprintf(message, "Hola Mundo! Soy el proceso %d!", myrank);
+        MPI_Send(message,strlen(message)+1,MPI_CHAR,myrank+1,tag,MPI_COMM_WORLD);
+        MPI_Recv(message, BUFSIZ, MPI_CHAR,myrank-1, tag, MPI_COMM_WORLD, &status);
+        printf("Mensaje recibido: %s\n", message);
+    }else{
+        sprintf(message, "Hola Mundo! Soy el proceso %d!", myrank);
+        MPI_Recv(message, BUFSIZ, MPI_CHAR,myrank-1, tag, MPI_COMM_WORLD, &status);
+        MPI_Send(message,strlen(message)+1,MPI_CHAR,myrank+1,tag,MPI_COMM_WORLD);
+        printf("Mensaje recibido: %s\n", message);    
+    }
+    MPI_Finalize();
+
+    printf("Tiempo requerido con %i procesos: %f\n",size,dwalltime()-tick);
+
+    return EXIT_SUCCESS;
+}
+
+double dwalltime(){
+	double sec;
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	sec = tv.tv_sec + tv.tv_usec/1000000.0;
+	return sec;
 }
