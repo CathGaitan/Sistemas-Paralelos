@@ -42,17 +42,14 @@ int main(int argc, char* argv[])
     tic = MPI_Wtime();
     for (source=1; source<size; source++) {
       toc = MPI_Wtime();
-      printf("Tiempo transcurrido %f (s):\tproceso %d, llamando a MPI_IRecv() [no bloqueante] (fuente rank %d)\n",
-	     (toc - tic), rank, source);
+      printf("Tiempo transcurrido %f (s):\tproceso %d, llamando a MPI_IRecv() [no bloqueante] (fuente rank %d)\n",(toc - tic), rank, source);
       MPI_Irecv(message, BUFSIZ, MPI_CHAR, source, tag, MPI_COMM_WORLD, &request);
       toc = MPI_Wtime();
-      printf("Tiempo transcurrido %f (s):\tproceso %d, MPI_IRecv() devolvio el control..\n",
-	     (toc - tic), rank);
+      printf("Tiempo transcurrido %f (s):\tproceso %d, MPI_IRecv() devolvio el control..\n",(toc - tic), rank);
       printf("\t\t\t\t\t..pero el mensaje no fue aun recibido..\n");
       MPI_Wait(&request, &status);  /* unsafe to proceed beyond here until request has been satisfied */ 
       toc = MPI_Wtime();
-      printf("Tiempo transcurrido %f (s):\tproceso %d, operacion receive completa con mensaje: %s\n", 
-	     (toc - tic), rank, message);
+      printf("Tiempo transcurrido %f (s):\tproceso %d, operacion receive completa con mensaje: %s\n", (toc - tic), rank, message);
     }
     resolution = MPI_Wtick();
     printf("\nTiempo total = %f (s)\n", resolution);
