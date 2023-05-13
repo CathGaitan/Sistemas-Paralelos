@@ -25,30 +25,16 @@ int main(int argc, char* argv[]){
 
     tick = dwalltime();
 
-    if(myrank == 0){
+    if(myrank%2 == 0){ //si mi rank es par
         sprintf(message, "Hola Mundo! Soy el proceso %d!", myrank);
-        MPI_Send(message,strlen(message)+1,MPI_CHAR,myrank+1,tag,MPI_COMM_WORLD);
-        MPI_Recv(message, BUFSIZ, MPI_CHAR,size,tag, MPI_COMM_WORLD, &status);
-        printf("Mensaje recibido: %s\n", message);
-    }
-
-    if(myrank == size){
-        sprintf(message, "Hola Mundo! Soy el proceso %d!", myrank);
-        MPI_Recv(message, BUFSIZ, MPI_CHAR,myrank-1, tag, MPI_COMM_WORLD, &status);
-        MPI_Send(message,strlen(message)+1,MPI_CHAR,0,tag,MPI_COMM_WORLD);
-        printf("Mensaje recibido: %s\n", message);  
-    }
-
-    if(myrank%2 == 0 && myrank !=size && myrank != 0){ //si mi rank es par
-        sprintf(message, "Hola Mundo! Soy el proceso %d!", myrank);
-        MPI_Send(message,strlen(message)+1,MPI_CHAR,myrank+1,tag,MPI_COMM_WORLD);
-        MPI_Recv(message, BUFSIZ, MPI_CHAR,myrank-1, tag, MPI_COMM_WORLD, &status);
+        MPI_Send(message,strlen(message)+1,MPI_CHAR,(myrank+1)%size,tag,MPI_COMM_WORLD);
+        MPI_Recv(message,BUFSIZ, MPI_CHAR,(myrank-1+size)%size, tag, MPI_COMM_WORLD, &status);
         printf("Mensaje recibido: %s\n", message);
     }else{
+        MPI_Recv(message, BUFSIZ, MPI_CHAR,(myrank-1+size)%size,tag, MPI_COMM_WORLD, &status);
+        printf("Mensaje recibido: %s\n", message);
         sprintf(message, "Hola Mundo! Soy el proceso %d!", myrank);
-        MPI_Recv(message, BUFSIZ, MPI_CHAR,myrank-1, tag, MPI_COMM_WORLD, &status);
-        MPI_Send(message,strlen(message)+1,MPI_CHAR,myrank+1,tag,MPI_COMM_WORLD);
-        printf("Mensaje recibido: %s\n", message);    
+        MPI_Send(message,strlen(message)+1,MPI_CHAR,(myrank+1)%size,tag,MPI_COMM_WORLD);
     }
     MPI_Finalize();
 
