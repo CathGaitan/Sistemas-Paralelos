@@ -5,7 +5,7 @@
 
 static inline void mult_matrices(double *A, double *B, double *C, int stripSize, int tam_bloque, int N);
 static inline void mult_bloques(double *ablk, double *bblk, double *cblk, int tam_bloque, int N);
-static inline void sumar_matrices(double *AB, double *CD, double *EF, double *R, int stripSize, int N);
+static inline void sumar_matrices(double *AB, double *CD, double *R, int stripSize, int N);
 
 
 // R = AB + CD + EF
@@ -94,7 +94,8 @@ int main(int argc, char* argv[]){
 	mult_matrices(A,B,AB,stripSize,tam_bloque,N);
 	mult_matrices(C,D,CD,stripSize,tam_bloque,N);
 	mult_matrices(E,F,EF,stripSize,tam_bloque,N);
-	sumar_matrices(AB,CD,EF,R,stripSize,N);
+	sumar_matrices(AB,CD,R,stripSize,N);
+	sumar_matrices(R,EF,R,stripSize,N);
 
 	commTimes[2] = MPI_Wtime();
 	
@@ -166,9 +167,9 @@ static inline void mult_bloques(double *ablk, double *bblk, double *cblk, int ta
     }
 }
 
-static inline void sumar_matrices(double *AB, double *CD, double *EF, double *R, int stripSize, int N){
+static inline void sumar_matrices(double *AB, double *CD, double *R, int stripSize, int N){
 	int i;
 	for(i=0;i<stripSize*N;i++){
-		R[i]=AB[i]+CD[i]+EF[i];
+		R[i]=AB[i]+CD[i];
 	}
 }
