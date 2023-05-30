@@ -108,7 +108,7 @@ int main(int argc, char* argv[]){
 	MPI_Reduce(commTimes, maxCommTimes, 4, MPI_DOUBLE, MPI_MAX, COORDINATOR, MPI_COMM_WORLD);
 
 	MPI_Finalize();
-	if (rank==COORDINATOR) {
+	if(rank==COORDINATOR){
 		for(i=0;i<N;i++){
 			for(j=0;j<N;j++){
 				check=check&&(R[i*N+j]==3*N);
@@ -119,11 +119,10 @@ int main(int argc, char* argv[]){
 	}else{
 		printf("Multiplicacion de matrices resultado erroneo\n");
 	}
-	
-	totalTime = maxCommTimes[3] - minCommTimes[0];
-	commTime = (maxCommTimes[1] - minCommTimes[0]) + (maxCommTimes[3] - minCommTimes[2]);
-	printf("Multiplicacion de matrices con N=%d, tam_bloque=%d, cant_procesos=%d\n",N,tam_bloque,cantProcesos);
-	printf("Tiempo total=%lf, Tiempo comunicacion=%lf, Tiempo computo=%lf",totalTime,commTime,totalTime-commTime);
+		totalTime = maxCommTimes[3] - minCommTimes[0];
+		commTime = (maxCommTimes[1] - minCommTimes[0]) + (maxCommTimes[3] - minCommTimes[2]);
+		printf("Multiplicacion de matrices con N=%d, tam_bloque=%d, cant_procesos=%d\n",N,tam_bloque,cantProcesos);
+		printf("Tiempo total=%lf, Tiempo comunicacion=%lf, Tiempo computo=%lf",totalTime,commTime,totalTime-commTime);
 	}
 
 	free(A);
